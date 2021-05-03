@@ -23,7 +23,8 @@ img.addEventListener('load', () => {
 //Input: image-input
 inputImage.addEventListener("change", () => {
 
-  img.src = URL.createObjectURL(inputImage.files[0]); //sets image url to selected image
+  let picture = inputImage.files[0];
+  img.src = URL.createObjectURL(picture); //sets image url to selected image
   img.alt = inputImage.value;
 })
 
@@ -51,7 +52,6 @@ document.getElementById("generate-meme").addEventListener('submit', (event) => {
   clearButton.disabled = false;
   readButton.disabled = false;
   generate.disabled = true;
-  //document.getElementById("voice-selection").disabled = false;
 
   //it kept refreshing so this stopped it
   event.preventDefault(); 
@@ -64,7 +64,7 @@ clearButton.addEventListener('click', (event) => {
   clearButton.disabled = true;
   readButton.disabled = true;
   generate.disabled = false;
-  document.getElementById("voice-selection").disabled = true;
+
   context.fillStyle = "Black"; //makes it so that the background stays black and doesn't turn white
   document.getElementById("generate-meme").reset();
 });
@@ -93,7 +93,7 @@ readButton.addEventListener("click", ()=> {
 
   //clears the utterance queue just in case
   synth.cancel();
-  
+
   synth.speak(speakTop);
   synth.speak(speakBottom);
 });

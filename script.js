@@ -1,16 +1,81 @@
 // script.js
 
 const img = new Image(); // used to load image from <input> and draw to canvas
+const canvas = document.getElementById("user-image"); //canvas
+const inputImage = document.getElementById("image-input"); //the inputted image
+const context = canvas.getContext("2d"); //the context of the canvas
+const clearButton = document.querySelector("[type='reset']"); //clear
+const readButton = document.querySelector("[type='button']"); //read
+const generate = document.querySelector("[type='submit']"); //generate
+
 
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
-  // TODO
 
-  // Some helpful tips:
-  // - Fill the whole Canvas with black first to add borders on non-square images, then draw on top
-  // - Clear the form when a new image is selected
-  // - If you draw the image to canvas here, it will update as soon as a new image is selected
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillstyle = "black";
+
+  let dimension = getDimmensions(canvas.width, canvas.width, img.width, img.height);
+
+  context.drawImage(img, dimension.startX, dimension.startY, dimension.width, dimension.height);
 });
+
+//Input: image-input
+inputImage.addEventListener("change", () => {
+
+  img.src = URL.createObjectURL(inputImage.files[0]);
+  img.alt = inputImage.value;
+})
+
+//function for writing memeText
+function memeText() {
+  let topText = document.getElementById("text-top").value;
+  let bottomText = document.getElementById("text-bottom").value;
+
+  context.fillStyle = "White";
+  context.font = "50px Comic Sans MS";
+
+  let topDist = context.measureText(topText).width/2;
+  let bottomDist = context.measureText(bottomText).width/2;
+
+  let canvasWidth = canvas.width/2
+
+  context.fillText(topText, canvasWidth - topDist, 60);
+  context.fillText(bottomText, canvasWidth - bottomDist, canvas.height-25);
+
+}
+
+//form: submit
+document.getElementById("generate-meme").addEventListener('submit', (event) => {
+  memeText();
+
+  clearButton.disabled = false;
+  readButton.disabled = false;
+  generate.disabled = true;
+
+  //it kept refreshing so this stopped it
+  event.preventDefault(); 
+})
+
+//button: clear
+clearButton.addEventListener('click', (event) => {
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  clearButton.disabled = true;
+  readButton.disabled = true;
+  generate.disabled = false;
+  context.fillStyle = "Black"; //makes it so that the background stays black and doesn't turn white
+  document.getElementById("generate-meme").reset();
+});
+
+//button: read text
+readButton.addEventListener("click", ()=> {
+  let voice = document.getElementById("voice-selection");
+  let topText = document.getElementById("text-top").value;
+  let bottomText = document.getElementById("text-bottom").value;
+
+})
 
 /**
  * Takes in the dimensions of the canvas and the new image, then calculates the new

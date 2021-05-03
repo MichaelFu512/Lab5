@@ -4,17 +4,16 @@ const img = new Image(); // used to load image from <input> and draw to canvas
 const canvas = document.getElementById("user-image"); //canvas
 const inputImage = document.getElementById("image-input"); //the inputted image
 const context = canvas.getContext("2d"); //the context of the canvas
-const clearButton = document.querySelector("[type='reset']"); //clear
-const readButton = document.querySelector("[type='button']"); //read
-const generate = document.querySelector("[type='submit']"); //generate
-
+const clearButton = document.querySelector("[type='reset']"); //clear button
+const readButton = document.querySelector("[type='button']"); //read button
+const generate = document.querySelector("[type='submit']"); //generate button
 
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
 
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.fillstyle = "black";
+  context.fillstyle = "black"; //makes background black
 
   let dimension = getDimmensions(canvas.width, canvas.width, img.width, img.height);
 
@@ -24,7 +23,7 @@ img.addEventListener('load', () => {
 //Input: image-input
 inputImage.addEventListener("change", () => {
 
-  img.src = URL.createObjectURL(inputImage.files[0]);
+  img.src = URL.createObjectURL(inputImage.files[0]); //sets image url to selected image
   img.alt = inputImage.value;
 })
 
@@ -33,7 +32,7 @@ function memeText() {
   let topText = document.getElementById("text-top").value;
   let bottomText = document.getElementById("text-bottom").value;
 
-  context.fillStyle = "White";
+  context.fillStyle = "White"; //make font white
   context.font = "50px Comic Sans MS";
 
   let topDist = context.measureText(topText).width/2;
@@ -43,7 +42,6 @@ function memeText() {
 
   context.fillText(topText, canvasWidth - topDist, 60);
   context.fillText(bottomText, canvasWidth - bottomDist, canvas.height-25);
-
 }
 
 //form: submit
@@ -53,6 +51,7 @@ document.getElementById("generate-meme").addEventListener('submit', (event) => {
   clearButton.disabled = false;
   readButton.disabled = false;
   generate.disabled = true;
+  //document.getElementById("voice-selection").disabled = false;
 
   //it kept refreshing so this stopped it
   event.preventDefault(); 
@@ -65,17 +64,85 @@ clearButton.addEventListener('click', (event) => {
   clearButton.disabled = true;
   readButton.disabled = true;
   generate.disabled = false;
+  document.getElementById("voice-selection").disabled = true;
   context.fillStyle = "Black"; //makes it so that the background stays black and doesn't turn white
   document.getElementById("generate-meme").reset();
 });
 
 //button: read text
 readButton.addEventListener("click", ()=> {
-  let voice = document.getElementById("voice-selection");
+  let voiceChoice = document.getElementById("voice-selection");
   let topText = document.getElementById("text-top").value;
   let bottomText = document.getElementById("text-bottom").value;
 
-})
+  //speech utterance for the text
+  let speakTop = new SpeechSynthesisUtterance(topText);
+  let speakBottom = new SpeechSynthesisUtterance(bottomText);
+
+  // For loop gotten from mozilla.org page on SpeechSynthesis
+  for(var i = 0; i < voices.length ; i++) {
+    //makes it read the meme with the seleted voice
+    if(voices[i].name === voiceChoice.options[voiceChoice.selectedIndex].getAttribute('data-name')) {
+      speakTop.voice = voices[i];
+      speakBottom.voice = voices[i];
+    }
+  }
+
+  speakTop.volume = volumeSlide.value / 100;
+  speakBottom.volume = volumeSlide.value / 100;
+
+  //clears the utterance queue just in case
+  synth.cancel();
+  
+  synth.speak(speakTop);
+  synth.speak(speakBottom);
+});
+
+/*
+ * Line 103 - 125 gotten from mozila.org page on SpeechSynthesis
+ */
+document.getElementById("voice-selection").disabled = false; 
+var synth = window.speechSynthesis;
+var voices = [];
+
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = populateVoiceList;
+}
+
+function populateVoiceList() {
+  voices = synth.getVoices();
+
+  for(var i = 0; i < voices.length ; i++) {
+    var option = document.createElement('option');
+    option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
+
+    if(voices[i].default) {
+      option.textContent += ' -- DEFAULT';
+    }
+
+    option.setAttribute('data-lang', voices[i].lang);
+    option.setAttribute('data-name', voices[i].name);
+    document.getElementById("voice-selection").appendChild(option);
+  }
+}
+
+//volume slide
+let volumeSlide = document.querySelector("[type='range']");
+let volumeImg = document.querySelector("#volume-group img");
+volumeSlide.addEventListener('input', ()=> {
+  if (volumeSlide.value >= 67){ 
+    volumeImg.src="icons/volume-level-3.svg"; 
+  }
+  else if (volumeSlide.value >= 34 && volumeSlide.value <= 66){
+    volumeImg.src = "icons/volume-level-2.svg"; 
+  }
+  else if (volumeSlide.value <= 33 && volumeSlide.value > 0){ 
+    volumeImg.src = "icons/volume-level-1.svg"; 
+  }
+  else {
+    volumeImg.src="icons/volume-level-0.svg"; 
+  }
+});
 
 /**
  * Takes in the dimensions of the canvas and the new image, then calculates the new
